@@ -214,7 +214,11 @@ DOCUMENT_PATHS = [
     "GRPC 2025 CONFERENCE PROGRAM.pdf",
     "Dates.pdf",
     "Contacts.csv",
-    "1.pdf"
+    "1.pdf",
+    "company2025.pdf",
+    "General Category.pdf",
+    "grpc 2024.pdf",
+    "GRPC 2025 Event Details.pdf"
 ]
 
 # ======== Utils ========

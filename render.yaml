@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: grpc-chatbot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: APIKEY

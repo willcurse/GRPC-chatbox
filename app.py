@@ -212,9 +212,9 @@ CHAT_MODEL = "gpt-4o"
 DOCUMENT_PATHS = [
     "GRPC 2025 Brochure.pdf",
     "GRPC 2025 CONFERENCE PROGRAM.pdf",
-    "GRPC 2025 Partnership Brochure.pdf",
     "Dates.pdf",
-    "Contacts.csv"
+    "Contacts.csv",
+    "1.pdf"
 ]
 
 # ======== Utils ========

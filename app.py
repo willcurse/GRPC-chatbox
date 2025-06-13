@@ -125,6 +125,11 @@ def home():
     return render_template("index.html")
 
 @app.route("/chat", methods=["POST"])
+def chat_webhook():
+    data = request.get_json()
+    print("Received data:", data)  
+    return jsonify({"message": "Webhook received"}), 200
+
 def chat():
     try:
         data = request.get_json()

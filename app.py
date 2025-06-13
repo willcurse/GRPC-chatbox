@@ -1,6 +1,3 @@
-
-
-
 import os
 import json
 import hashlib
@@ -25,8 +22,8 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 # ======== Config ========
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 200
-TOP_K = 10  # Increased for reranking
-FINAL_K = 3  # Final chunks to pass to GPT for answering
+TOP_K = 10
+FINAL_K = 3
 EMBED_MODEL = "text-embedding-3-small"
 CHAT_MODEL = "gpt-4o"
 
@@ -124,28 +121,43 @@ index.add(embedding_matrix)
 def home():
     return render_template("index.html")
 
-@app.route("/chat", methods=["POST"])
+@app.route('/chat', methods=['POST'])
 def chat_webhook():
-    data = request.get_json()
-    print("Received data:", data)  
-    return jsonify({"message": "Webhook received"}), 200
-
-def chat():
     try:
-        data = request.get_json()
-        user_input = data.get("message", "").strip()
-        if not user_input:
-            return jsonify({"error": "Empty message"}), 400
+        raw_data = request.data
+        print("Raw request headers:", dict(request.headers))
+        print("Raw request body:", raw_data)
 
-        # Step 1: Embed user query
+        data = json.loads(raw_data.decode('utf-8'))
+        print("Parsed data:", data)
+
+        reply_text = "Hi! Your message was received 🎉"
+
+        return jsonify({
+            "action": {
+                "type": "reply",
+                "replies": [
+                    {
+                        "type": "text",
+                        "text": reply_text
+                    }
+                ]
+            }
+        }), 200
+
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"error": str(e)}), 400
+
+# ======== Internal Chat Function ========
+def handle_chat(user_input):
+    try:
         query_embed = np.array(get_embedding(user_input)).astype("float32").reshape(1, -1)
 
-        # Step 2: Retrieve top-K chunks using FAISS
         distances, indices = index.search(query_embed, TOP_K)
         retrieved_chunks = [all_chunks[idx] for idx in indices[0]]
         chunk_sources = [metadata[idx] for idx in indices[0]]
 
-        # Step 3: Rerank using GPT
         rerank_prompt = f"""
 You are a helpful assistant. From the following chunks of context, select the {FINAL_K} most relevant to this question:
 "{user_input}"
@@ -161,7 +173,6 @@ Context Chunks:
 
         refined_context = rerank_response.choices[0].message.content.strip()
 
-        # Step 4: Final GPT call with refined context
         messages = [
             {
                 "role": "system",
@@ -182,11 +193,10 @@ Context Chunks:
             temperature=0.2
         )
 
-        reply = final_response.choices[0].message.content.strip()
-        return jsonify({"reply": reply})
+        return final_response.choices[0].message.content.strip()
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return f"Error processing chat: {e}"
 
 # ======== Main ========
 if __name__ == "__main__":
